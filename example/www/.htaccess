@@ -1,0 +1,9 @@
+# For detail information on mod_rewrite see
+# http://httpd.apache.org/docs/3.2/mod/mod_rewrite.html
+
+RewriteEngine On
+RewriteBase   /
+
+# Without subdomain
+RewriteCond   %{REQUEST_FILENAME} !init.php
+RewriteRule   ^(.*)$              /init.php?uri=$1       [L,QSA]

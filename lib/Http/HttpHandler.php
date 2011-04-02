@@ -16,12 +16,15 @@ class HttpHandler {
 	 * @param PDO $db
 	 */
 	static function handle(HttpRequest $request, PDO $db) {
+		// Get the requested URI
 		$uri = $request->getUri();
 
-		// If the URI is not set (e.g. by going to 'http://example.com/init.php'),
-		// throw a 403 HttpResponse.
+		// If the URI is not set (e.g. by going to '/init.php'), throw a 403
+		// HttpResponse.
 		if ($uri === NULL)
 			throw new HttpResponse(403);
+
+		// TODO Get everything necessary from the database.
 	}
 
 	/**

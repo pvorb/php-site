@@ -18,6 +18,8 @@ class HttpRequest {
 
 	/**
 	 * Returns the requested URI path.
+	 *
+	 * @return string
 	 */
 	function getUri() {
 		return $this->uri;

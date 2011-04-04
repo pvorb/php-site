@@ -23,8 +23,56 @@ class HttpHandler {
 		// HttpResponse.
 		if ($uri === NULL)
 			throw new HttpResponse(403);
+		elseif ($uri == '')
+			$uri = '/';
 
-		// TODO Get everything necessary from the database.
+		$res = $db->query(
+			"SELECT
+				`path`, `fs`, `created`, `edited`, `locale`, `view`
+			FROM
+				`file`
+			WHERE
+				`uri` = '$uri';"
+		);
+
+		$assoc_file = $res->fetchAll(PDO::FETCH_ASSOC);
+		var_dump($assoc_file);
+
+		$res = $db->query(
+			"SELECT
+				`value`
+			FROM
+				`tag`
+			WHERE
+				`uri` = '$uri';"
+		);
+
+		$assoc_tag = $res->fetchAll(PDO::FETCH_ASSOC);
+		var_dump($assoc_tag);
+
+		$res = $db->query(
+			"SELECT
+				`name`, `value`
+			FROM
+				`attr_text`
+			WHERE
+				`resource` = '$uri' AND `uri` = 1;"
+		);
+
+		$assoc_annex = $res->fetchAll(PDO::FETCH_ASSOC);
+		var_dump($assoc_annex);
+
+		$res = $db->query(
+			"SELECT
+				`name`, `value`
+			FROM
+				`attr_string`
+			WHERE
+				`resource` = '$uri' AND `uri` = 1;"
+		);
+
+		$assoc_attribute = $res->fetchAll(PDO::FETCH_ASSOC);
+		var_dump($assoc_attribute);
 	}
 
 	/**

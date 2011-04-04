@@ -8,4 +8,4 @@
 
 define('DIR_LIB', dirname(__FILE__).'/');
 
-require DIR_LIB.'init_site.php';
+require DIR_LIB.'load.php';

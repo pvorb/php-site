@@ -24,8 +24,6 @@ function lang_neg(array $available) {
 	preg_match_all("#(([[:alpha:]]+)-[[:alpha:]-]+)( ?;q=(\d+.\d+))?#i",
 		$langs, $hits, PREG_SET_ORDER);
 
-		var_dump($hits);
-
 	$best_lang = 0;
 	$q_max = 0;
 

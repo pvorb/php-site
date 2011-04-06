@@ -40,8 +40,6 @@ function init_site() {
 function load_controller(HttpRequest $request, array $files, PDO $db) {
 	$num_files = count($files);
 
-	echo $_SERVER['HTTP_ACCEPT_LANGUAGE'];
-
 	// No file found
 	if ($num_files == 0) {
 		throw new HttpResponse(404);

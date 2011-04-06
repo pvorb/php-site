@@ -1,6 +1,6 @@
 <?php
-require_once DIR_LIB.'Http/HttpRequest.php';
-require_once DIR_LIB.'Http/HttpResponse.php';
+require_once DIR_LIB.'core/HttpRequest.php';
+require_once DIR_LIB.'core/HttpResponse.php';
 
 /**
  * Provides handler methods for HTTP requests and HTTP responses.
@@ -23,56 +23,27 @@ class HttpHandler {
 		// HttpResponse.
 		if ($uri === NULL)
 			throw new HttpResponse(403);
-		elseif ($uri == '')
-			$uri = '/';
 
 		$res = $db->query(
 			"SELECT
-				`path`, `fs`, `created`, `edited`, `locale`, `view`
+				`uri`, `path`, `fs`, `created`, `edited`, `locale`, `view`
 			FROM
 				`file`
 			WHERE
-				`uri` = '$uri';"
+				`site` = ".SITE." AND `public` = TRUE
+				AND
+				(`uri` = '$uri' OR `uri` = '$uri/')
+			ORDER BY
+				`path` ASC;"
 		);
 
-		$assoc_file = $res->fetchAll(PDO::FETCH_ASSOC);
-		var_dump($assoc_file);
+		$files = $res->fetchAll(PDO::FETCH_ASSOC);
 
-		$res = $db->query(
-			"SELECT
-				`value`
-			FROM
-				`tag`
-			WHERE
-				`uri` = '$uri';"
-		);
+		if (count($files) == 0) {
+			throw new HttpResponse(404);
+		}
 
-		$assoc_tag = $res->fetchAll(PDO::FETCH_ASSOC);
-		var_dump($assoc_tag);
-
-		$res = $db->query(
-			"SELECT
-				`name`, `value`
-			FROM
-				`attr_text`
-			WHERE
-				`resource` = '$uri' AND `uri` = 1;"
-		);
-
-		$assoc_annex = $res->fetchAll(PDO::FETCH_ASSOC);
-		var_dump($assoc_annex);
-
-		$res = $db->query(
-			"SELECT
-				`name`, `value`
-			FROM
-				`attr_string`
-			WHERE
-				`resource` = '$uri' AND `uri` = 1;"
-		);
-
-		$assoc_attribute = $res->fetchAll(PDO::FETCH_ASSOC);
-		var_dump($assoc_attribute);
+		load_controller($request, $files, $db);
 	}
 
 	/**

@@ -1,4 +1,6 @@
 <?php
+require_once DIR_LIB.'core/content_type.php';
+
 /**
  * Controller class for raw files.
  *
@@ -24,9 +26,18 @@ class RawController {
 	 * View the raw file.
 	 */
 	function view() {
-		if (file_exists($this->file['path']))
-			readfile($this->file['path']);
-		else
-			throw new HttpResponse(404);
+		// If the file resides on the file system
+		if ($this->file['fs']) {
+			// If it does not exist, throw a 404 HttpResponse
+			if (!file_exists($this->file['path']))
+				throw new HttpResponse(404);
+
+			$path = $this->file['path'];
+			header('Content-Type: '.content_type($path));
+
+			readfile($path);
+		} else {
+
+		}
 	}
 }

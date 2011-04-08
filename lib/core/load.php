@@ -13,16 +13,9 @@ function init_site() {
 	// Create a new HttpRequest
 	$req = new HttpRequest();
 
-	// Initialize database connection
-	$db = new PDO(
-		DB_TYPE.':host='.DB_HOST.';port='.DB_PORT.';dbname='.DB_NAME, // DSN
-		DB_USER, // Database user name
-		DB_PWD   // Database user password
-	);
-
 	// Handle the request
 	try {
-		HttpHandler::handle($req, $db);
+		HttpHandler::handle($req);
 	}
 	// Catch responses and send them to the client
 	catch (HttpResponse $resp) {
@@ -31,51 +24,42 @@ function init_site() {
 }
 
 /**
- * Loads the required controller for a request.
- * @param HttpRequest $request
- * @param array $files
- * @param PDO $db
- * @throws HttpResponse
+ * Passes the request to the first mapper that exists in the URL.
+ *
+ * Example: $uri = '/path/to/file'
+ *  1. look for '/path/to/__mapper.php'
+ *  2. look for '/path/__mapper.php'
+ *  3. look for '/__mapper.php'
+ *
+ * @param string $uri
  */
-function load_controller(HttpRequest $request, array $files, PDO $db) {
-	$num_files = count($files);
+function delegate($uri) {
+	// copy string
+	$uri_part = $uri;
+	// While the length of the URI part is greater than one
+	while (($uri_part_len = strlen($uri_part)) >= 1) {
+		// Get position of the last slash in URI
+		$last_slash_pos = strrpos($uri_part, '/') + 1;
 
-	// No file found
-	if ($num_files == 0) {
-		throw new HttpResponse(404);
-	}
-	// Single file found
-	elseif ($num_files == 1) {
-		$file = $files[0];
-	}
-	// More than one file found
-	else {
-		$langs = array();
-		foreach ($files as $file) {
-			$langs[] = $file['locale'];
+		// If URI is a directory, look for its mapper
+		if ($last_slash_pos == $uri_part_len) {
+			// path of the mapper
+			$mapper = DIR_WWW.$uri_part.MAPPER_FILE;
+			// Require mapper if it exists
+			if (file_exists($mapper)) {
+				$uri = str_replace($uri_part, '', $uri);
+				require $mapper;
+				return;
+			} else {
+				// Otherwise remove last slash
+				$uri_part = substr($uri_part, 0, $uri_part_len - 1);
+			}
+		} else {
+			// Otherwise remove file from URI
+			$uri_part = substr($uri_part, 0, $last_slash_pos);
 		}
-
-		// Try to find the right language
-		require_once DIR_LIB.'core/lang_neg.php';
-		$file = $files[lang_neg($langs)];
 	}
 
-	// Controller name
-	$cname = $file['view'].'Controller';
-	// File name
-	$fname = 'controller/'.$cname.'.php';
-
-	// Include the right file
-	if (file_exists(DIR_PROJECT.$fname))
-		require_once DIR_PROJECT.$fname;
-	else
-		require_once DIR_LIB.$fname;
-
-	// Create controller instance
-	$c = new $cname($request, $file, $db);
-
-	if ($_POST)
-		$c->post();
-	else
-		$c->view();
+	// If no MAPPER_FILE exists, throw a HTTP 500 Internal Server Error.
+	throw new HttpResponse(500, 'No mapper found.');
 }

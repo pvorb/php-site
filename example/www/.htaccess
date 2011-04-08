@@ -5,5 +5,5 @@ RewriteEngine On
 RewriteBase   /
 
 # Without subdomain
-RewriteCond   %{REQUEST_FILENAME} !init.php
-RewriteRule   ^(.*)$              /init.php?uri=/$1 [L,QSA]
+RewriteCond   %{REQUEST_FILENAME} !__init.php
+RewriteRule   ^(.*)$              /__init.php?uri=/$1 [L,QSA]

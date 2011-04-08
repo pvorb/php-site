@@ -12,14 +12,8 @@ define('DIR_WWW', DIR_PROJECT.'www/');
 
 define('DEBUG_MODE', TRUE);
 
-// Define the current DIR_WWW as site 1
-define('SITE', 1);
+// Define URI prefix
 define('URI_PREFIX', 'http://example.org');
 
-// Define details for the connection to the database
-define('DB_TYPE', 'mysql');
-define('DB_HOST', 'localhost');
-define('DB_PORT', '3306');
-define('DB_NAME', 'site');
-define('DB_USER', 'root');
-define('DB_PWD', '');
+// Mapper name
+define('MAPPER_FILE', '__mapper.php');

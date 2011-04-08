@@ -15,35 +15,17 @@ class HttpHandler {
 	 * @param HttpRequest $request
 	 * @param PDO $db
 	 */
-	static function handle(HttpRequest $request, PDO $db) {
+	static function handle(HttpRequest $request) {
 		// Get the requested URI
 		$uri = $request->getUri();
 
-		// If the URI is not set (e.g. by going to '/init.php'), throw a 403
+		// If the URI is not set (e.g. by going to '/__init.php'), throw a 403
 		// HttpResponse.
 		if ($uri === NULL)
-			throw new HttpResponse(403);
-
-		$res = $db->query(
-			"SELECT
-				`uri`, `path`, `fs`, `created`, `edited`, `locale`, `view`
-			FROM
-				`file`
-			WHERE
-				`site` = ".SITE." AND `public` = TRUE
-				AND
-				(`uri` = '$uri' OR `uri` = '$uri/')
-			ORDER BY
-				`path` ASC;"
-		);
-
-		$files = $res->fetchAll(PDO::FETCH_ASSOC);
-
-		if (count($files) == 0) {
 			throw new HttpResponse(404);
-		}
 
-		load_controller($request, $files, $db);
+		// Delegate to another controller
+		delegate($uri);
 	}
 
 	/**
@@ -55,13 +37,22 @@ class HttpHandler {
 		// If DEBUG_MODE is set to TRUE
 		if (defined('DEBUG_MODE') && DEBUG_MODE) {
 			// Trace the response
-			echo '<i>The following HTTP response was sent:</i>'."<br>\n<br>\n";
+			echo 'The following HTTP response was sent: <i>'
+				.$response->getMessage()."</i><br>\n<br>\n";
+
 			echo 'HTTP status code: '.$response->getCode()."<br>\n";
+
+			if ($response->getLocation()) echo 'You will get redirected to: '
+				.$response->getLocation();
+
 			$trace_lines = explode("\n", $response->getTraceAsString());
+
 			echo "<ul>\n";
+
 			foreach ($trace_lines as $line) {
 				echo "\t<li>".$line."\n";
 			}
+
 			echo "</ul>\n";
 		} else {
 			// TODO Send the response headers

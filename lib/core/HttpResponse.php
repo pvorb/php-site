@@ -20,12 +20,13 @@ class HttpResponse extends Exception {
 	 * @param int $code
 	 * @param string $location [optional]
 	 */
-	function __construct($code, $location = NULL) {
+	function __construct($code, $message = '', $location = NULL) {
 		// TODO only allow valid codes
 
 		// $this->code is inherited from Exception
 		$this->code = $code;
 		$this->location = $location;
+		$this->message = $message;
 	}
 
 	/**

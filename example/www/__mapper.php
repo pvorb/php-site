@@ -1,12 +1,9 @@
 <?php
 /**
- * Site example.
- *
- * This file initializes the site.
+ * General Mapper.
  *
  * @license MIT <http://vorb.de/license/mit>
  * @author Paul Vorbach <paul@vorb.de>
  */
 
-require '../conf.php';
-init_site();
+

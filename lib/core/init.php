@@ -1,13 +1,14 @@
 <?php
-require_once DIR_LIB.'core/HttpRequest.php';
-require_once DIR_LIB.'core/HttpResponse.php';
-require_once DIR_LIB.'core/HttpHandler.php';
-
 /**
- * Initializes Database connection and HTTP handling.
+ * These functions are necessary for initiating the framework.
  *
  * @license MIT <http://vorb.de/license/mit>
  * @author Paul Vorbach <paul@vorb.de>
+ */
+require_once DIR_LIB.'core/http.php';
+
+/**
+ * Initializes Database connection and HTTP handling.
  */
 function init_site() {
 	// Create a new HttpRequest
@@ -47,7 +48,8 @@ function delegate($uri) {
 			$mapper = DIR_WWW.$uri_part.MAPPER_FILE;
 			// Require mapper if it exists
 			if (file_exists($mapper)) {
-				$uri = str_replace($uri_part, '', $uri);
+				// Remove $uri_part from beginning of $uri
+				$uri = substr($uri, $uri_part_len);
 				require $mapper;
 				return;
 			} else {

@@ -25,4 +25,4 @@ $mime_types = array(
 		'xml'  => 'text/xml'
 	);
 
-require DIR_LIB.'core/init.php';
+require DIR_LIB.'core/http.php';

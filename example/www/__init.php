@@ -7,4 +7,4 @@
  */
 
 require '../conf.php';
-init_site();
+HttpRequest::handle();

@@ -7,39 +7,6 @@
  */
 
 /**
- * Provides a wrapper around an ordinary HTTP Request.
- */
-class HttpRequest {
-	private $uri = NULL;
-	private $method;
-
-	/**
-	 * Creates a new HTTP request object.
-	 */
-	function __construct() {
-		$this->uri = $_SERVER['REQUEST_URI'];
-		$this->method = $_SERVER['REQUEST_METHOD'];
-	}
-
-	/**
-	 * Returns the requested URI path.
-	 *
-	 * @return string
-	 */
-	function getUri() {
-		return $this->uri;
-	}
-
-	/**
-	 * Returns the request method.
-	 *
-	 * @return string
-	 */
-	function getMethod() {
-		return $this->method;
-	}
-}
-/**
  * Provides functionality for sending back a HTTP response.
  */
 class HttpResponse extends Exception {
@@ -109,26 +76,104 @@ class HttpResponse extends Exception {
 }
 
 /**
- * Provides handler methods for HTTP requests and HTTP responses.
+ * Provides a wrapper around an ordinary HTTP Request.
  */
-class HttpHandler {
+class HttpRequest {
+	private $uri = NULL;
+	private $method;
+
 	/**
-	 * Handles a HttpRequest object by using a PDO database connection.
-	 *
-	 * @param HttpRequest $request
-	 * @param PDO $db
+	 * Creates a new HTTP request object.
 	 */
-	static function handle(HttpRequest $request) {
-		// Get the requested URI
-		$uri = $request->getUri();
+	private function __construct() {
+		$this->uri = $_SERVER['REQUEST_URI'];
+		$this->method = $_SERVER['REQUEST_METHOD'];
+	}
 
-		// If the URI is not set (e.g. by going to '/__init.php'), throw a 403
-		// HttpResponse.
-		if ($uri === NULL)
-			throw new HttpResponse(404);
+	private function __clone() {}
 
-		// Delegate to another controller
-		delegate($uri);
+	/**
+	 * Sets the given URI.
+	 *
+	 * @param string $uri
+	 */
+	function setUri($uri) {
+		$this->uri = $uri;
+	}
+
+	/**
+	 * Returns the Request URI.
+	 *
+	 * @return string
+	 */
+	function getUri() {
+		return $this->uri;
+	}
+
+	/**
+	 * Returns the request method.
+	 *
+	 * @return string
+	 */
+	function getMethod() {
+		return $this->method;
+	}
+
+	/**
+	 * Handles the HTTP request.
+	 */
+	static function handle() {
+		$request = new HttpRequest();
+		try {
+			// Delegate to a URI mapper
+			self::delegate($request);
+		} catch (HttpResponse $response) {
+			// Catch every HttpResponse and send it.
+			self::send($response);
+		}
+	}
+
+
+	/**
+	 * Passes the request to the first mapper that exists in the URL.
+	 *
+	 * Example: $uri = '/path/to/file'
+	 *  1. look for '/path/to/__mapper.php'
+	 *  2. look for '/path/__mapper.php'
+	 *  3. look for '/__mapper.php'
+	 *
+	 * @param HttpRequest $uri
+	 */
+	private static function delegate(HttpRequest &$request) {
+		// copy string
+		$uri_part = $request->getUri();
+		// While the length of the URI part is greater than one
+		while (($uri_part_len = strlen($uri_part)) >= 1) {
+			// Get position of the last slash in URI
+			$last_slash_pos = strrpos($uri_part, '/') + 1;
+
+			// If URI is a directory, look for its mapper
+			if ($last_slash_pos == $uri_part_len) {
+				// path of the mapper
+				$mapper = DIR_WWW.$uri_part.MAPPER_FILE;
+				// Require mapper if it exists
+				if (file_exists($mapper)) {
+					// Remove $uri_part from beginning of $uri
+					$request->setUri(substr($request->getUri(), $uri_part_len));
+					require $mapper;
+					return;
+				} else {
+					// Otherwise remove last slash
+					$uri_part = substr($uri_part, 0, $uri_part_len - 1);
+				}
+			} else {
+				// Otherwise remove file from URI
+				$uri_part = substr($uri_part, 0, $last_slash_pos);
+			}
+		}
+
+		// If no MAPPER_FILE exists, throw a HTTP 500 Internal Server Error.
+		throw new HttpResponse(500, 'No mapper found.');
 	}
 
 	/**
@@ -136,7 +181,7 @@ class HttpHandler {
 	 *
 	 * @param HttpResponse $response
 	 */
-	static function send(HttpResponse $response) {
+	static function send(HttpResponse &$response) {
 		// If DEBUG_MODE is set to TRUE
 		if (defined('DEBUG_MODE') && DEBUG_MODE) {
 			// Trace the response

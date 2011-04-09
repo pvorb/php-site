@@ -126,7 +126,7 @@ class HttpRequest {
 		$request = new HttpRequest();
 		try {
 			// Delegate to a URI mapper
-			self::delegate($request);
+			self::dispatch($request);
 		} catch (HttpResponse $response) {
 			// Catch every HttpResponse and send it.
 			self::send($response);
@@ -144,7 +144,7 @@ class HttpRequest {
 	 *
 	 * @param HttpRequest $uri
 	 */
-	private static function delegate(HttpRequest &$request) {
+	private static function dispatch(HttpRequest &$request) {
 		// copy string
 		$uri_part = $request->getUri();
 		// While the length of the URI part is greater than one

@@ -137,8 +137,6 @@ class Router {
 					if ($route->isFunction()) {
 						$fn = $route->getFunction();
 
-						// TODO Load function file
-
 						// Run function
 						$fn($params);
 					} else {
@@ -146,11 +144,18 @@ class Router {
 						$method = $route->getMethod();
 
 						// TODO Load controller class
+						$ctrl_file = $controller.'.php';
+						// Look for controller class file
+						if (file_exists(DIR_PROJ_CTRL.$ctrl_file))
+							require_once DIR_PROJ_CTRL.$ctrl_file;
+						elseif (file_exists(DIR_LIB_CTRL.$ctrl_file))
+							require_once DIR_LIB_CTRL.$ctrl_file;
 
 						// Create controller object
 						$ctrl = new $controller();
 						// Run method
 						$ctrl->$method($params);
+						throw new HttpResponse(200);
 					}
 				}
 			}

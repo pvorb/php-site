@@ -73,6 +73,37 @@ class HttpResponse extends Exception {
 				break;
 		}
 	}
+
+	/**
+	 * Sends HTTP headers according to a HttpResonse object.
+	 *
+	 * @param HttpResponse $response
+	 */
+	function send() {
+		// If DEBUG_MODE is set to TRUE
+		if (defined('DEBUG_MODE') && DEBUG_MODE) {
+			// Trace the response
+			echo 'The following HTTP response was sent: <i>'
+				.$this->getMessage()."</i><br>\n<br>\n";
+
+			echo 'HTTP status code: '.$this->getCode()."<br>\n";
+
+			if ($this->getLocation()) echo 'You will get redirected to: '
+				.$this->getLocation();
+
+			$trace_lines = explode("\n", $this->getTraceAsString());
+
+			echo "<ul>\n";
+
+			foreach ($trace_lines as $line) {
+				echo "\t<li>".$line."\n";
+			}
+
+			echo "</ul>\n";
+		} else {
+			// TODO Send the response headers
+		}
+	}
 }
 
 /**
@@ -129,7 +160,7 @@ class HttpRequest {
 			self::dispatch($request);
 		} catch (HttpResponse $response) {
 			// Catch every HttpResponse and send it.
-			self::send($response);
+			$response->send();
 		}
 	}
 
@@ -174,36 +205,5 @@ class HttpRequest {
 
 		// If no MAPPER_FILE exists, throw a HTTP 500 Internal Server Error.
 		throw new HttpResponse(500, 'No mapper found.');
-	}
-
-	/**
-	 * Sends HTTP headers according to a HttpResonse object.
-	 *
-	 * @param HttpResponse $response
-	 */
-	static function send(HttpResponse &$response) {
-		// If DEBUG_MODE is set to TRUE
-		if (defined('DEBUG_MODE') && DEBUG_MODE) {
-			// Trace the response
-			echo 'The following HTTP response was sent: <i>'
-				.$response->getMessage()."</i><br>\n<br>\n";
-
-			echo 'HTTP status code: '.$response->getCode()."<br>\n";
-
-			if ($response->getLocation()) echo 'You will get redirected to: '
-				.$response->getLocation();
-
-			$trace_lines = explode("\n", $response->getTraceAsString());
-
-			echo "<ul>\n";
-
-			foreach ($trace_lines as $line) {
-				echo "\t<li>".$line."\n";
-			}
-
-			echo "</ul>\n";
-		} else {
-			// TODO Send the response headers
-		}
 	}
 }
